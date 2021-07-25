@@ -1,0 +1,12 @@
+# Default voucher duration in seconds
+defualt-duration: 120
+
+# Material to be used for Voucher
+voucher-material: PAPER
+
+# Material to be used for Donation Well
+well-material: HOPPER
+
+# Timer given for players to enter their donation amount
+# after clicking on Donation Well (in seconds)
+well-chat-duration: 10

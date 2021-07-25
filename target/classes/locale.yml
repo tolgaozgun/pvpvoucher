@@ -1,0 +1,17 @@
+CONSOLE_NOT_AVAILABLE: "&cConsole is not available for this command."
+NO_PERM: "&cInsufficient permissions!"
+WRONG_USAGE: "&cWrong usage. Syntax: &f%usage%"
+VOUCHER_ALREADY_ACTIVE: "&cVoucher is already active!" 
+PLAYER_NOT_FOUND: "&cPlayer &f%player% &cnot found!"
+VOUCHER_TITLE: "&aVoucher Item"
+VOUCHER_LORE:
+- "&fUse this item to bail from fights!"
+- " "
+- "&6Gives you &f%duration% &6seconds"
+- "&6of invulnerability!"
+- " "
+- "&9Right click to use"
+SCOREBOARD_TITLE: "&4Voucher"
+SCOREBOARD_LINES:
+- "&6Time left:"
+- "%timeLeft% / %duration%"

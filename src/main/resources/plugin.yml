@@ -1,0 +1,17 @@
+name: PVPVoucher
+version: 0.0.1-SNAPSHOT
+api: []
+api-version: 1.17
+main: com.tolgaozgun.pvpvoucher.PluginMain
+depend: [Vault]
+commands:
+    voucher:
+       description: Toggles the PVPVoucher for the server.
+       usage: /<command>
+       permission: pvpvoucher.admin.vouchercommand
+       aliases: [pvpvoucher, pvoucher]
+    well:
+       description: Donation Well commands
+       usage: /<command>
+       permission: pvpvoucher.admin.wellcommand
+       aliases: [donationwell, dwell]
