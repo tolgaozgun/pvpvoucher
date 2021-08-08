@@ -14,6 +14,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.tolgaozgun.pvpvoucher.commands.VoucherCommand;
+import com.tolgaozgun.pvpvoucher.commands.WellCommand;
 import com.tolgaozgun.pvpvoucher.listeners.DamageListener;
 import com.tolgaozgun.pvpvoucher.listeners.InteractListener;
 import com.tolgaozgun.pvpvoucher.listeners.PlayerChatListener;
@@ -95,6 +96,7 @@ public class PluginMain extends JavaPlugin {
 
     private void loadCommands() {
 	getServer().getPluginCommand("voucher").setExecutor(new VoucherCommand());
+	getServer().getPluginCommand("well").setExecutor(new WellCommand());
     }
 
     private void loadListeners() {

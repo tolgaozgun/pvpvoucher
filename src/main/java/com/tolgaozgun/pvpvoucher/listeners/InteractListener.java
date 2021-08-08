@@ -20,20 +20,22 @@ public class InteractListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
 	Player player = event.getPlayer();
+
+	if (event.getClickedBlock() != null && plugin.getWellManager().isWell(event.getClickedBlock().getLocation())) {
+	    event.setCancelled(true);
+	    plugin.getServer().getPluginManager()
+		    .callEvent(new WellUseEvent(player, event.getClickedBlock().getLocation()));
+	}
+
 	if (event.getItem() == null) {
 	    return;
 	}
-
-	if (event.getClickedBlock() != null && plugin.getWellManager().isWell(event.getClickedBlock().getLocation())) {
-	    plugin.getServer().getPluginManager().callEvent(new WellUseEvent(player, event.getClickedBlock().getLocation()));
-	}
-	
 	ItemStack item = event.getItem();
 
 	if (item.getType() != Material.AIR && Util.checkNBT(item, Constants.NK_VOUCHER)) {
+	    event.setCancelled(true);
 	    plugin.getServer().getPluginManager().callEvent(new VoucherUseEvent(player, item));
 	}
-
 
     }
 

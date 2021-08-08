@@ -3,7 +3,7 @@ version: 0.0.1-SNAPSHOT
 api: []
 api-version: 1.17
 main: com.tolgaozgun.pvpvoucher.PluginMain
-depend: [Vault]
+depend: [Vault, ProtocolLib]
 commands:
     voucher:
        description: Toggles the PVPVoucher for the server.
