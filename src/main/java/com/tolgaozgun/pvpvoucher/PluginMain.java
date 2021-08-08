@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.tolgaozgun.pvpvoucher.gui.GUIManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,7 +18,6 @@ import com.tolgaozgun.pvpvoucher.commands.VoucherCommand;
 import com.tolgaozgun.pvpvoucher.commands.WellCommand;
 import com.tolgaozgun.pvpvoucher.listeners.DamageListener;
 import com.tolgaozgun.pvpvoucher.listeners.InteractListener;
-import com.tolgaozgun.pvpvoucher.listeners.PlayerChatListener;
 import com.tolgaozgun.pvpvoucher.listeners.PlayerConnectionListener;
 import com.tolgaozgun.pvpvoucher.listeners.VoucherListener;
 import com.tolgaozgun.pvpvoucher.listeners.WellListener;
@@ -39,18 +39,22 @@ public class PluginMain extends JavaPlugin {
     private FileConfiguration playersConfig;
     private FileConfiguration voucherConfig;
     private FileConfiguration wellConfig;
+    private FileConfiguration bountyConfig;
 
     private File configFile;
     private File localeFile;
     private File voucherFile;
     private File playersFile;
     private File wellFile;
+    private File bountyFile;
 
     private ConfigManager configManager;
     private VoucherManager voucherManager;
     private PlayerManager playerManager;
     private WellManager wellManager;
-    
+    private BountyManager bountyManager;
+    private GUIManager guiManager;
+
     private SignMenuFactory signMenuFactory;
 
     private static Economy econ = null;
@@ -59,189 +63,218 @@ public class PluginMain extends JavaPlugin {
     private static PluginMain instance;
 
     public void onEnable() {
-	instance = this;
-	registerSerializable();
-	loadFiles();
-	Messages.load();
-	loadManagers();
-	loadListeners();
-	loadCommands();
-	onReload();
+        instance = this;
+        registerSerializable();
+        loadFiles();
+        Messages.load();
+        loadManagers();
+        loadListeners();
+        loadCommands();
+        onReload();
 
-	if (!setupEconomy()) {
-	    log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
-	    getServer().getPluginManager().disablePlugin(this);
-	    return;
-	}
+        if (!setupEconomy()) {
+            log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
     }
 
     private void onReload() {
-	for (Player bukkitPlayer : Bukkit.getOnlinePlayers()) {
-	    PPlayer player = getPlayerManager().onJoin(bukkitPlayer);
-	    getVoucherManager().load(player);
-	}
+        for (Player bukkitPlayer : Bukkit.getOnlinePlayers()) {
+            PPlayer player = getPlayerManager().onJoin(bukkitPlayer);
+            getVoucherManager().load(player);
+        }
     }
 
     public void onDisable() {
-	for (Player bukkitPlayer : Bukkit.getOnlinePlayers()) {
-	    getVoucherManager().quit(getPlayerManager().getPlayer(bukkitPlayer));
-	    getPlayerManager().onQuit(bukkitPlayer);
-	}
+        for (Player bukkitPlayer : Bukkit.getOnlinePlayers()) {
+            getVoucherManager().quit(getPlayerManager().getPlayer(bukkitPlayer));
+            getPlayerManager().onQuit(bukkitPlayer);
+        }
+        bountyManager.onClose();
     }
 
     private void registerSerializable() {
-	ConfigurationSerialization.registerClass(PPlayer.class);
-	ConfigurationSerialization.registerClass(Voucher.class);
+        ConfigurationSerialization.registerClass(BountyTransaction.class);
+        ConfigurationSerialization.registerClass(Bounty.class);
+        ConfigurationSerialization.registerClass(BlacklistItem.class);
+        ConfigurationSerialization.registerClass(PPlayer.class);
+        ConfigurationSerialization.registerClass(Voucher.class);
     }
 
     private void loadCommands() {
-	getServer().getPluginCommand("voucher").setExecutor(new VoucherCommand());
-	getServer().getPluginCommand("well").setExecutor(new WellCommand());
+        getServer().getPluginCommand("voucher").setExecutor(new VoucherCommand());
+        getServer().getPluginCommand("well").setExecutor(new WellCommand());
     }
 
     private void loadListeners() {
-	getServer().getPluginManager().registerEvents(new InteractListener(), this);
-	getServer().getPluginManager().registerEvents(new PlayerChatListener(), this);
-	getServer().getPluginManager().registerEvents(new PlayerConnectionListener(), this);
-	getServer().getPluginManager().registerEvents(new DamageListener(), this);
-	getServer().getPluginManager().registerEvents(new VoucherListener(), this);
-	getServer().getPluginManager().registerEvents(new WellListener(), this);
+        getServer().getPluginManager().registerEvents(new InteractListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerConnectionListener(), this);
+        getServer().getPluginManager().registerEvents(new DamageListener(), this);
+        getServer().getPluginManager().registerEvents(new VoucherListener(), this);
+        getServer().getPluginManager().registerEvents(new WellListener(), this);
     }
 
     private void loadManagers() {
-	configManager = new ConfigManager();
-	playerManager = new PlayerManager();
-	voucherManager = new VoucherManager();
-	wellManager = new WellManager();
-	signMenuFactory = new SignMenuFactory(this);
+        configManager = new ConfigManager();
+        playerManager = new PlayerManager();
+        voucherManager = new VoucherManager();
+        wellManager = new WellManager();
+        bountyManager = new BountyManager();
+        guiManager = new GUIManager();
+        signMenuFactory = new SignMenuFactory(this);
     }
 
     private boolean setupEconomy() {
-	if (getServer().getPluginManager().getPlugin("Vault") == null) {
-	    return false;
-	}
-	RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-	if (rsp == null) {
-	    return false;
-	}
-	econ = rsp.getProvider();
-	return econ != null;
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        econ = rsp.getProvider();
+        return econ != null;
     }
-    
+
     public SignMenuFactory getSignMenuFactory() {
-	return signMenuFactory;
+        return signMenuFactory;
     }
 
     public ConfigManager getConfigManager() {
-	return configManager;
+        return configManager;
     }
 
     public VoucherManager getVoucherManager() {
-	return voucherManager;
+        return voucherManager;
     }
 
     public PlayerManager getPlayerManager() {
-	return playerManager;
+        return playerManager;
     }
 
     public WellManager getWellManager() {
-	return wellManager;
+        return wellManager;
+    }
+
+    public BountyManager getBountyManager() {
+        return bountyManager;
+    }
+
+    public GUIManager getGUIManager() {
+        return guiManager;
     }
 
     public static PluginMain getInstance() {
-	return instance;
+        return instance;
     }
 
     public FileConfiguration getConfig() {
-	return config;
+        return config;
     }
 
     public FileConfiguration getLocaleConfig() {
-	return localeConfig;
+        return localeConfig;
     }
 
     public FileConfiguration getPlayersConfig() {
-	return playersConfig;
+        return playersConfig;
     }
 
     public FileConfiguration getVouchersConfig() {
-	return voucherConfig;
+        return voucherConfig;
     }
 
     public FileConfiguration getWellConfig() {
-	return wellConfig;
+        return wellConfig;
+    }
+
+    public FileConfiguration getBountyConfig() {
+        return bountyConfig;
+    }
+
+    public File getBountyFile() {
+        return bountyFile;
     }
 
     public File getWellFile() {
-	return wellFile;
+        return wellFile;
     }
 
     public File getVouchersFile() {
-	return voucherFile;
+        return voucherFile;
     }
 
     public File getConfigFile() {
-	return configFile;
+        return configFile;
     }
 
     public File getLocaleFile() {
-	return localeFile;
+        return localeFile;
     }
 
     public File getPlayersFile() {
-	return playersFile;
+        return playersFile;
     }
 
     public static Economy getEconomy() {
-	return econ;
+        return econ;
     }
 
     private void loadFiles() {
-	localeFile = new File(getDataFolder(), "locale.yml");
-	playersFile = new File(getDataFolder(), "players.yml");
-	configFile = new File(getDataFolder(), "config.yml");
-	voucherFile = new File(getDataFolder(), "vouchers.yml");
-	wellFile = new File(getDataFolder(), "wells.yml");
+        localeFile = new File(getDataFolder(), "locale.yml");
+        playersFile = new File(getDataFolder(), "players.yml");
+        configFile = new File(getDataFolder(), "config.yml");
+        voucherFile = new File(getDataFolder(), "vouchers.yml");
+        wellFile = new File(getDataFolder(), "wells.yml");
+        bountyFile = new File(getDataFolder(), "bounty.yml");
 
-	if (!playersFile.exists()) {
-	    playersFile.getParentFile().mkdirs();
-	    saveResource("players.yml", true);
-	}
+        if (!playersFile.exists()) {
+            playersFile.getParentFile().mkdirs();
+            saveResource("players.yml", true);
+        }
 
-	if (!localeFile.exists()) {
-	    localeFile.getParentFile().mkdirs();
-	    saveResource("locale.yml", true);
-	}
+        if (!localeFile.exists()) {
+            localeFile.getParentFile().mkdirs();
+            saveResource("locale.yml", true);
+        }
 
-	if (!configFile.exists()) {
-	    configFile.getParentFile().mkdirs();
-	    saveResource("config.yml", true);
-	}
+        if (!configFile.exists()) {
+            configFile.getParentFile().mkdirs();
+            saveResource("config.yml", true);
+        }
 
-	if (!voucherFile.exists()) {
-	    voucherFile.getParentFile().mkdirs();
-	    saveResource("vouchers.yml", true);
-	}
+        if (!voucherFile.exists()) {
+            voucherFile.getParentFile().mkdirs();
+            saveResource("vouchers.yml", true);
+        }
 
-	if (!wellFile.exists()) {
-	    wellFile.getParentFile().mkdirs();
-	    saveResource("wells.yml", true);
-	}
+        if (!wellFile.exists()) {
+            wellFile.getParentFile().mkdirs();
+            saveResource("wells.yml", true);
+        }
 
-	config = new YamlConfiguration();
-	playersConfig = new YamlConfiguration();
-	localeConfig = new YamlConfiguration();
-	voucherConfig = new YamlConfiguration();
-	wellConfig = new YamlConfiguration();
+        if (!bountyFile.exists()) {
+            bountyFile.getParentFile().mkdirs();
+            saveResource("bounty.yml", true);
+        }
 
-	try {
-	    playersConfig.load(playersFile);
-	    localeConfig.load(localeFile);
-	    config.load(configFile);
-	    voucherConfig.load(voucherFile);
-	    wellConfig.load(wellFile);
-	} catch (IOException | InvalidConfigurationException e) {
-	    e.printStackTrace();
-	}
+        config = new YamlConfiguration();
+        playersConfig = new YamlConfiguration();
+        localeConfig = new YamlConfiguration();
+        voucherConfig = new YamlConfiguration();
+        wellConfig = new YamlConfiguration();
+        bountyConfig = new YamlConfiguration();
+
+        try {
+            playersConfig.load(playersFile);
+            localeConfig.load(localeFile);
+            config.load(configFile);
+            voucherConfig.load(voucherFile);
+            wellConfig.load(wellFile);
+            bountyConfig.load(bountyFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
     }
 }

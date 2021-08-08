@@ -3,10 +3,13 @@ package com.tolgaozgun.pvpvoucher.listeners;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import com.tolgaozgun.pvpvoucher.PluginMain;
 import com.tolgaozgun.pvpvoucher.player.PPlayer;
+
+import java.util.UUID;
 
 public class DamageListener implements Listener {
 
@@ -14,14 +17,38 @@ public class DamageListener implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-	if (event.getEntity() instanceof Player) {
-	    Player bukkitPlayer = (Player) event.getEntity();
-	    PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
-	    if (player.getVoucher() != null && player.getVoucher().isActive()) {
-		event.setCancelled(true);
-		return;
-	    }
-	}
+        if (event.getEntity() instanceof Player) {
+            Player bukkitPlayer = (Player) event.getEntity();
+            PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
+            if (player.getVoucher() != null && player.getVoucher().isActive()) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onKill(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+            Player victim = (Player) event.getEntity();
+            Player attacker = (Player) event.getDamager();
+            UUID victimId = victim.getUniqueId();
+            UUID attackerId = attacker.getUniqueId();
+
+            if (victim.getHealth() - event.getDamage() <= 0) {
+                if (plugin.getBountyManager().isBlacklisted(attackerId, victimId)) {
+                    attacker.sendMessage("Bounty is still in cooldown for " + victim.getName() + ".");
+                    attacker.sendMessage("You need to wait " + plugin.getBountyManager().getTimeRemaining(attackerId, victimId) + " more seconds!");
+                    return;
+                }
+                PPlayer victimP = plugin.getPlayerManager().getPlayer(victim);
+                long bounty = victimP.getBounty().getTotal();
+                victim.sendMessage("Your bounty for " + bounty + " has dropped onto the ground!");
+                plugin.getBountyManager().getSoulItem(victim);
+                plugin.getBountyManager().addToBlacklist(attackerId, victimId);
+                return;
+            }
+        }
     }
 
 }

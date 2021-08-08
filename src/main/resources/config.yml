@@ -7,6 +7,16 @@ voucher-material: PAPER
 # Material to be used for Donation Well
 well-material: HOPPER
 
-# Timer given for players to enter their donation amount
-# after clicking on Donation Well (in seconds)
-well-chat-duration: 10
+# Material to be used for Souls
+soul-material: TORCH
+
+# Custom Model Data for Souls
+# Put NONE to disable.
+soul-model-data: 1212
+
+# Bounty duration per each player-to-player encounter
+# (How many seconds should be passed for one player to claim
+# another player's bounty again)
+# This setting will not be affected by server restart, reload etc.
+# Default: 1 day (86,400 seconds)
+bounty-blacklist-duration: 86400
