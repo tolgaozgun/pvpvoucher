@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import com.tolgaozgun.pvpvoucher.util.ConfigManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -61,6 +62,7 @@ public class VoucherManager {
         item = nbti.getItem();
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(Messages.VOUCHER_TITLE);
+        meta.setCustomModelData(plugin.getConfigManager().voucherModelData);
         List<String> lore = Messages.VOUCHER_LORE;
         for (int i = 0; i < lore.size(); i++) {
             String line = lore.get(i);

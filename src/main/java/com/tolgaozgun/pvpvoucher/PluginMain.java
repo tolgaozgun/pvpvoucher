@@ -1,10 +1,19 @@
 package com.tolgaozgun.pvpvoucher;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
-
+import com.tolgaozgun.pvpvoucher.commands.BountyCommand;
+import com.tolgaozgun.pvpvoucher.commands.VoucherCommand;
+import com.tolgaozgun.pvpvoucher.commands.WellCommand;
 import com.tolgaozgun.pvpvoucher.gui.GUIManager;
+import com.tolgaozgun.pvpvoucher.listeners.*;
+import com.tolgaozgun.pvpvoucher.player.PPlayer;
+import com.tolgaozgun.pvpvoucher.player.PlayerManager;
+import com.tolgaozgun.pvpvoucher.util.ConfigManager;
+import com.tolgaozgun.pvpvoucher.util.Messages;
+import com.tolgaozgun.pvpvoucher.util.SignMenuFactory;
+import com.tolgaozgun.pvpvoucher.util.WellManager;
+import com.tolgaozgun.pvpvoucher.voucher.Voucher;
+import com.tolgaozgun.pvpvoucher.voucher.VoucherManager;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,23 +23,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.tolgaozgun.pvpvoucher.commands.VoucherCommand;
-import com.tolgaozgun.pvpvoucher.commands.WellCommand;
-import com.tolgaozgun.pvpvoucher.listeners.DamageListener;
-import com.tolgaozgun.pvpvoucher.listeners.InteractListener;
-import com.tolgaozgun.pvpvoucher.listeners.PlayerConnectionListener;
-import com.tolgaozgun.pvpvoucher.listeners.VoucherListener;
-import com.tolgaozgun.pvpvoucher.listeners.WellListener;
-import com.tolgaozgun.pvpvoucher.player.PPlayer;
-import com.tolgaozgun.pvpvoucher.player.PlayerManager;
-import com.tolgaozgun.pvpvoucher.util.ConfigManager;
-import com.tolgaozgun.pvpvoucher.util.Messages;
-import com.tolgaozgun.pvpvoucher.util.SignMenuFactory;
-import com.tolgaozgun.pvpvoucher.util.WellManager;
-import com.tolgaozgun.pvpvoucher.voucher.Voucher;
-import com.tolgaozgun.pvpvoucher.voucher.VoucherManager;
-
-import net.milkbowl.vault.economy.Economy;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 public class PluginMain extends JavaPlugin {
 
@@ -59,11 +54,12 @@ public class PluginMain extends JavaPlugin {
 
     private static Economy econ = null;
 
-    private static final Logger log = Logger.getLogger("Minecraft");
+    private static Logger log;
     private static PluginMain instance;
 
     public void onEnable() {
         instance = this;
+        log = getLogger();
         registerSerializable();
         loadFiles();
         Messages.load();
@@ -105,6 +101,7 @@ public class PluginMain extends JavaPlugin {
     private void loadCommands() {
         getServer().getPluginCommand("voucher").setExecutor(new VoucherCommand());
         getServer().getPluginCommand("well").setExecutor(new WellCommand());
+        getServer().getPluginCommand("bounty").setExecutor(new BountyCommand());
     }
 
     private void loadListeners() {

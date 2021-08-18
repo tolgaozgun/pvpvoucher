@@ -1,5 +1,6 @@
 package com.tolgaozgun.pvpvoucher.gui;
 
+import com.tolgaozgun.pvpvoucher.Bounty;
 import com.tolgaozgun.pvpvoucher.PluginMain;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,12 +13,16 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.List;
+import java.util.Map;
+
 public class BountyListGUI implements StackableGUI {
 
     private PluginMain plugin = PluginMain.getInstance();
     private Player player;
     private Inventory inventory;
     private int pageNo;
+    private boolean lastPage;
 
 
     public BountyListGUI(Player player) {
@@ -38,18 +43,35 @@ public class BountyListGUI implements StackableGUI {
 
     @Override
     public void openInventory(Player target) {
-        inventory = Bukkit.createInventory(target, 54, "Bounty List");
+        List<ItemStack> bounties = plugin.getBountyManager().getBountyItems();
 
-        int[] blackBarIndexes = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 50, 51, 52, 53};
-        ItemStack blackPane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta bPaneMeta = blackPane.getItemMeta();
-        bPaneMeta.setDisplayName(ChatColor.BLACK + "");
-        blackPane.setItemMeta(bPaneMeta);
-        for (int index : blackBarIndexes) {
-            inventory.setItem(index, blackPane);
+        while (pageNo != 0 && pageNo * 28 >= bounties.size()) {
+            pageNo--;
         }
+        inventory = Bukkit.createInventory(target, 54, "Bounty List | Page: " + (pageNo + 1));
+        GUIComponents.placeBlackBorder(inventory);
 
-        //TODO: Get bounty list and place player heads.
+        if (bounties != null) {
+            int j = 0;
+            for (int i = pageNo * 28; i < (pageNo + 1) * 28 && i < bounties.size() && j < 54; i++) {
+                if (j % 9 == 0) {
+                    j++;
+                } else if (j % 9 == 8) {
+                    j += 2;
+                }
+                inventory.setItem(j, bounties.get(i));
+                j++;
+            }
+            lastPage = true;
+            if (pageNo * 28 < bounties.size()) {
+                GUIComponents.placeNextPage(inventory);
+                lastPage = false;
+            }
+
+            if (pageNo > 0) {
+                GUIComponents.placePrevPage(inventory);
+            }
+        }
 
         GUIComponents.placeInventoryFooter(inventory, target);
         target.openInventory(inventory);
@@ -72,13 +94,26 @@ public class BountyListGUI implements StackableGUI {
             switch (index) {
                 case 34:
                     return;
+                case 45:
+                    if (pageNo > 0) {
+                        pageNo--;
+                        player.openInventory(inventory);
+                    }
+                    return;
                 case 48:
                     if (plugin.getGUIManager().hasPreviousGUI(player)) {
                         StackableGUI stackableGUI = plugin.getGUIManager().getPreviousGUI(player);
                         stackableGUI.openInventory(player);
                     }
+                    return;
                 case 49:
                     player.closeInventory();
+                    return;
+                case 53:
+                    if (!lastPage) {
+                        pageNo++;
+                        player.openInventory(inventory);
+                    }
                     return;
                 default:
                     return;

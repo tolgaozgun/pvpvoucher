@@ -17,7 +17,7 @@ public class VoucherCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.isOp() && !player.hasPermission("voucher.admin.vouchercommand")) {
+            if (!player.isOp() && !player.hasPermission("voucher.admin.command.voucher")) {
                 player.sendMessage(Messages.NO_PERM);
                 return true;
             }

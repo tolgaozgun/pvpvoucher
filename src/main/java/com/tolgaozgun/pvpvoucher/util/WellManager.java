@@ -21,57 +21,46 @@ public class WellManager {
     private List<UUID> chatPlayers;
 
     public WellManager() {
-	plugin = PluginMain.getInstance();
-	file = plugin.getWellFile();
-	config = plugin.getWellConfig();
-	wells = new ArrayList<>();
-	loadAll();
+        plugin = PluginMain.getInstance();
+        file = plugin.getWellFile();
+        config = plugin.getWellConfig();
+        wells = new ArrayList<>();
+        loadAll();
     }
 
-    public void addChatPlayer(Player player) {
-	chatPlayers.add(player.getUniqueId());
-	plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-
-	    @Override
-	    public void run() {
-		chatPlayers.remove(player.getUniqueId());
-	    }
-
-	}, plugin.getConfigManager().wellChatTimer * 20L);
-    }
 
     public void removeChatPlayer(Player player) {
-	chatPlayers.remove(player.getUniqueId());
+        chatPlayers.remove(player.getUniqueId());
     }
 
     public boolean isWell(Location location) {
-	return wells.contains(location);
+        return wells.contains(location);
     }
 
     public void addWell(Location location) {
-	wells.add(location);
-	saveConfig();
+        wells.add(location);
+        saveConfig();
     }
 
     public void removeWell(Location location) {
-	if (wells.contains(location)) {
-	    wells.remove(location);
-	}
-	saveConfig();
+        if (wells.contains(location)) {
+            wells.remove(location);
+        }
+        saveConfig();
     }
 
     private void loadAll() {
-	List<String> list = config.getStringList("wells");
-	wells = Util.deserializeLocList(list);
+        List<String> list = config.getStringList("wells");
+        wells = Util.deserializeLocList(list);
     }
 
     private void saveConfig() {
-	config.set("wells", Util.serializeLocList(wells));
-	try {
-	    config.save(file);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
+        config.set("wells", Util.serializeLocList(wells));
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

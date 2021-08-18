@@ -15,16 +15,16 @@ public class PlayerConnectionListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-	Player bukkitPlayer = event.getPlayer();
-	PPlayer player = plugin.getPlayerManager().onJoin(bukkitPlayer);
-	plugin.getVoucherManager().load(player);
+        Player bukkitPlayer = event.getPlayer();
+        PPlayer player = plugin.getPlayerManager().onJoin(bukkitPlayer);
+        plugin.getVoucherManager().load(player);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-	Player player = event.getPlayer();
-	plugin.getVoucherManager().quit(plugin.getPlayerManager().getPlayer(player));
-	plugin.getPlayerManager().onQuit(player);
+        Player player = event.getPlayer();
+        plugin.getVoucherManager().quit(plugin.getPlayerManager().getPlayer(player));
+        plugin.getPlayerManager().onQuit(player);
     }
 
 }

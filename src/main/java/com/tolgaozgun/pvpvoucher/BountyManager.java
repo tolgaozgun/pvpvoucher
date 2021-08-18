@@ -2,6 +2,7 @@ package com.tolgaozgun.pvpvoucher;
 
 import com.tolgaozgun.pvpvoucher.player.PPlayer;
 import com.tolgaozgun.pvpvoucher.util.Messages;
+import com.tolgaozgun.pvpvoucher.util.SkullCreator;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
@@ -23,6 +24,7 @@ public class BountyManager {
     public static final String NBT_BOUNTY_PLAYER = "BOUNTY_PLY";
     public static final String NBT_BOUNTY_AMOUNT = "BOUNTY_AMT";
     private List<BlacklistItem> blackList;
+    private Map<Bounty, ItemStack> bounties;
     private PluginMain plugin;
     private FileConfiguration config;
     private File file;
@@ -32,16 +34,18 @@ public class BountyManager {
         file = plugin.getBountyFile();
         config = plugin.getBountyConfig();
         blackList = new ArrayList<>();
+        bounties = new HashMap<>();
         loadAll();
     }
 
     public ItemStack getSoulItem(Player bukkitPlayer) {
         UUID id = bukkitPlayer.getUniqueId();
+        long bounty = getBountyAmount(id);
+
         ItemStack item = new ItemStack(plugin.getConfigManager().soulMaterial);
-        PPlayer player = plugin.getPlayerManager().getPlayer(id);
-        long bounty = player.getBounty().getTotal();
         ItemMeta meta = item.getItemMeta();
         meta.setCustomModelData(plugin.getConfigManager().soulModelData);
+
         String title = Messages.SOUL_TITLE.replace("%victim%", bukkitPlayer.getName());
         List<String> lore = Messages.SOUL_LORE;
         ListIterator<String> iterator = lore.listIterator();
@@ -78,7 +82,7 @@ public class BountyManager {
         return items;
     }
 
-    public boolean doesExist(@org.jetbrains.annotations.NotNull UUID uuid) {
+    public boolean doesBlacklistHave(@org.jetbrains.annotations.NotNull UUID uuid) {
         return config.contains("blacklist." + uuid.toString());
     }
 
@@ -103,6 +107,28 @@ public class BountyManager {
         blackList.add(item);
     }
 
+    public Map<Bounty, ItemStack> getBounties() {
+        return bounties;
+    }
+
+    public List<ItemStack> getBountyItems(){
+        return bounties.values().stream().toList();
+    }
+
+
+    public void addBounty(UUID player, BountyTransaction transaction) {
+        Bounty bounty;
+        for (Bounty bIterator : bounties.keySet()) {
+            if (bIterator.getPlayerId().equals(player)) {
+                bounty = bIterator;
+            }
+        }
+        bounty = new Bounty(player);
+        bounty.addTransaction(transaction);
+        ItemStack item = SkullCreator.itemFromUuid(player);
+        bounties.put(bounty, item);
+    }
+
     public long getTimeRemaining(UUID attacker, UUID attacked) {
 
         Iterator<BlacklistItem> iterator = blackList.iterator();
@@ -120,6 +146,23 @@ public class BountyManager {
         return 0L;
     }
 
+    public void removeBounty(UUID uuid) {
+        for (Bounty bounty : bounties.keySet()) {
+            if (bounty.getPlayerId().equals(uuid)) {
+                bounties.remove(bounty);
+            }
+        }
+    }
+
+    public long getBountyAmount(UUID uuid) {
+        for (Bounty bounty : bounties.keySet()) {
+            if (bounty.getPlayerId().equals(uuid)) {
+                return bounty.getTotal();
+            }
+        }
+        return 0L;
+    }
+
     private void loadAll() {
         try {
             for (String key : Objects.requireNonNull(config.getConfigurationSection("blacklist")).getKeys(false)) {
@@ -127,20 +170,53 @@ public class BountyManager {
                 blackList.add(item);
             }
         } catch (NullPointerException ex) {
-            plugin.getLogger().warning("Error loading bounty config, ignore if empty!");
+            plugin.getLogger().warning("Error loading bounty config blacklist, ignore if empty!");
+            return;
+        }
+
+        try {
+            for (String key : Objects.requireNonNull(config.getConfigurationSection("bounties")).getKeys(false)) {
+                Bounty bounty = (Bounty) config.get("bounties." + key);
+                ItemStack item = SkullCreator.itemFromUuid(bounty.getPlayerId());
+                ItemMeta meta = item.getItemMeta();
+                
+                bounties.put(bounty, item);
+            }
+
+        } catch (NullPointerException ex) {
+            plugin.getLogger().warning("Error loading bounty config bounties, ignore if empty!");
             return;
         }
     }
 
     public void onClose() {
-        saveBlacklist();
+        saveBlacklist(false);
+        saveBounties(false);
+        saveConfig();
     }
 
     private void saveBlacklist() {
+        saveBlacklist(true);
+    }
+
+    private void saveBounties() {
+        saveBounties(true);
+    }
+
+    private void saveBlacklist(boolean shouldSave) {
+        config.set("blacklist", null);
         for (BlacklistItem item : blackList) {
             config.set("blacklist." + item.getId().toString(), item);
         }
-        saveConfig();
+        if (shouldSave) saveConfig();
+    }
+
+    private void saveBounties(boolean shouldSave) {
+        config.set("bounties", null);
+        for (Bounty bounty : bounties.keySet()) {
+            config.set("bounties." + bounty.getPlayerId().toString(), bounty);
+        }
+        if (shouldSave) saveConfig();
     }
 
     private void saveConfig() {

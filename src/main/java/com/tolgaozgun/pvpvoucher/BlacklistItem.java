@@ -15,7 +15,7 @@ public class BlacklistItem implements ConfigurationSerializable {
 
     public BlacklistItem(UUID attacker, UUID attacked, long timeOccurred) {
         id = UUID.randomUUID();
-        while (PluginMain.getInstance().getBountyManager().doesExist(id)) {
+        while (PluginMain.getInstance().getBountyManager().doesBlacklistHave(id)) {
             id = UUID.randomUUID();
         }
         this.attacker = attacker;

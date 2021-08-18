@@ -18,7 +18,7 @@ public class WellCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.isOp() && !player.hasPermission("voucher.admin.wellcommand")) {
+            if (!player.isOp() && !player.hasPermission("voucher.admin.command.well")) {
                 player.sendMessage(Messages.NO_PERM);
                 return true;
             }

@@ -21,32 +21,32 @@ public class VoucherListener implements Listener {
 
     @EventHandler
     public void onVoucherUse(VoucherUseEvent event) {
-	Player bukkitPlayer = event.getPlayer();
-	PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
-	if (player.isVoucherActive()) {
-	    bukkitPlayer.sendMessage(Messages.VOUCHER_ALREADY_ACTIVE);
-	    event.setCancelled(true);
-	    return;
-	}
+        Player bukkitPlayer = event.getPlayer();
+        PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
+        if (player.isVoucherActive()) {
+            bukkitPlayer.sendMessage(Messages.VOUCHER_ALREADY_ACTIVE);
+            event.setCancelled(true);
+            return;
+        }
 
-	ItemStack item = event.getItemStack();
-	NBTItem nbti = new NBTItem(item);
-	long duration = nbti.getLong(Constants.NK_DURATION);
-	Voucher voucher = new Voucher(duration);
-	plugin.getVoucherManager().startVoucher(bukkitPlayer, voucher);
-	plugin.getVoucherManager().setActive(voucher);
-	player.setVoucher(voucher);
-	item.setAmount(item.getAmount() - 1);
-	bukkitPlayer.sendMessage("Used voucher for " + duration + " seconds!");
+        ItemStack item = event.getItemStack();
+        NBTItem nbti = new NBTItem(item);
+        long duration = nbti.getLong(Constants.NK_DURATION);
+        Voucher voucher = new Voucher(duration);
+        plugin.getVoucherManager().startVoucher(bukkitPlayer, voucher);
+        plugin.getVoucherManager().setActive(voucher);
+        player.setVoucher(voucher);
+        item.setAmount(item.getAmount() - 1);
+        bukkitPlayer.sendMessage("Used voucher for " + duration + " seconds!");
     }
 
     @EventHandler
     public void onVoucherEnd(VoucherEndEvent event) {
-	Player bukkitPlayer = event.getPlayer();
-	PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
-	player.setVoucher(null);
-	plugin.getVoucherManager().removeVoucher(bukkitPlayer);
-	bukkitPlayer.sendMessage("Your voucher has expired!");
+        Player bukkitPlayer = event.getPlayer();
+        PPlayer player = plugin.getPlayerManager().getPlayer(bukkitPlayer);
+        player.setVoucher(null);
+        plugin.getVoucherManager().removeVoucher(bukkitPlayer);
+        bukkitPlayer.sendMessage("Your voucher has expired!");
     }
 
 }

@@ -97,6 +97,7 @@ public class MainGUI implements StackableGUI {
                         StackableGUI stackableGUI = plugin.getGUIManager().getPreviousGUI(player);
                         stackableGUI.openInventory(player);
                     }
+                    return;
                 case 49:
                     player.closeInventory();
                     return;

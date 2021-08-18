@@ -9,18 +9,10 @@ import java.util.UUID;
 
 public class BountyTransaction implements ConfigurationSerializable {
 
-    private UUID id;
     private long amount;
     private String description;
 
     public BountyTransaction(long amount, String description) {
-        id = UUID.randomUUID();
-        this.amount = amount;
-        this.description = description;
-    }
-
-    public BountyTransaction(UUID id, long amount, String description) {
-        this.id = id;
         this.amount = amount;
         this.description = description;
     }
@@ -37,7 +29,6 @@ public class BountyTransaction implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put("id", id.toString());
         map.put("amount", amount + "");
         map.put("description", description);
         return map;
@@ -47,6 +38,6 @@ public class BountyTransaction implements ConfigurationSerializable {
         UUID id = UUID.fromString((String) map.get("id"));
         long amount = Long.valueOf((String) map.get("amount"));
         String description = (String) map.get("description");
-        return new BountyTransaction(id, amount, description);
+        return new BountyTransaction(amount, description);
     }
 }

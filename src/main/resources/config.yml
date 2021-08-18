@@ -4,6 +4,10 @@ defualt-duration: 120
 # Material to be used for Voucher
 voucher-material: PAPER
 
+# Custom Model Data for Voucher
+# Put NONE to disable.
+voucher-model-data: 1212
+
 # Material to be used for Donation Well
 well-material: HOPPER
 

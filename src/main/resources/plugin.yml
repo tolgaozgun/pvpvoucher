@@ -8,10 +8,15 @@ commands:
     voucher:
        description: Toggles the PVPVoucher for the server.
        usage: /<command>
-       permission: pvpvoucher.admin.vouchercommand
+       permission: pvpvoucher.admin.command.voucher
        aliases: [pvpvoucher, pvoucher]
     well:
        description: Donation Well commands
        usage: /<command>
-       permission: pvpvoucher.admin.wellcommand
+       permission: pvpvoucher.admin.command.well
        aliases: [donationwell, dwell]
+    bounty:
+      description: Bounty commands
+      usage: /<command>
+      permission: pvpvoucher.user.command.bounty
+      aliases: [donationwell, dwell]

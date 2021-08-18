@@ -14,10 +14,10 @@ public class ConfigManager {
     // Voucher stuff
     public int defaultDuration;
     public Material voucherMaterial;
+    public int voucherModelData;
 
     // Well stuff
     public Material wellMaterial;
-
 
     // Souls stuff
     public Material soulMaterial;
@@ -42,6 +42,9 @@ public class ConfigManager {
         soulMaterial = Material.valueOf(config.getString("soul-material", "TORCH"));
         if (config.get("soul-model-data") instanceof Integer) {
             soulModelData = config.getInt("soul-model-data");
+        }
+        if (config.get("voucher-model-data") instanceof Integer) {
+            voucherModelData = config.getInt("voucher-model-data");
         }
     }
 
